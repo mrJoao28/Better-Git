@@ -3,7 +3,7 @@
   "name": "io.github.mrJoao28/repository-intelligence-mcp",
   "description": "Deep GitHub repository discovery and evidence-based analysis. Starts from a repository URL, discovers its structure and stack, and exposes read-only analysis tools.",
   "repository": {
-    "url": "https://github.com/mrJoao28/repository-intelligence-mcp",
+    "url": "https://github.com/mrJoao28/Better-Git",
     "source": "github"
   },
   "version": "0.1.0",
