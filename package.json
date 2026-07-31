@@ -1,7 +1,6 @@
 {
   "name": "repository-intelligence-mcp",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "description": "Deep GitHub repository discovery and evidence-based analysis through MCP.",
   "engines": {
