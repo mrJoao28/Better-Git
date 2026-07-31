@@ -2,7 +2,7 @@ import { createServer as createHttpServer, type IncomingMessage, type ServerResp
 import { randomUUID } from "node:crypto";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
-import { createMcpServer } from "./index.js";
+import { createMcpServer } from "./server.js";
 import { config } from "./config.js";
 
 const host = process.env.MCP_HTTP_HOST || "127.0.0.1";
@@ -29,28 +29,23 @@ function sendJson(res: ServerResponse, status: number, body: unknown): void {
 
 function isAuthorized(req: IncomingMessage): boolean {
   if (!httpToken) return true;
-
-  const header = req.headers.authorization;
-  return header === `Bearer ${httpToken}`;
+  return req.headers.authorization === `Bearer ${httpToken}`;
 }
 
 function isOriginAllowed(req: IncomingMessage): boolean {
   const origin = req.headers.origin;
   if (!origin) return true;
-  if (allowedOrigins.size === 0) return false;
   return allowedOrigins.has(origin);
 }
 
 async function readJsonBody(req: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = [];
-
   for await (const chunk of req) {
     chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
   }
 
   const raw = Buffer.concat(chunks).toString("utf8");
   if (!raw) return undefined;
-
   return JSON.parse(raw);
 }
 
@@ -66,8 +61,8 @@ async function handleMcp(req: IncomingMessage, res: ServerResponse): Promise<voi
     return;
   }
 
-  const sessionId = req.headers["mcp-session-id"];
-  const session = typeof sessionId === "string" ? sessionId : undefined;
+  const sessionHeader = req.headers["mcp-session-id"];
+  const sessionId = typeof sessionHeader === "string" ? sessionHeader : undefined;
 
   if (req.method === "POST") {
     const contentType = req.headers["content-type"] || "";
@@ -84,13 +79,12 @@ async function handleMcp(req: IncomingMessage, res: ServerResponse): Promise<voi
       return;
     }
 
-    if (session) {
-      const transport = transports.get(session);
+    if (sessionId) {
+      const transport = transports.get(sessionId);
       if (!transport) {
         sendJson(res, 404, { error: "MCP session not found" });
         return;
       }
-
       await transport.handleRequest(req, res, body);
       return;
     }
@@ -121,36 +115,19 @@ async function handleMcp(req: IncomingMessage, res: ServerResponse): Promise<voi
     return;
   }
 
-  if (req.method === "GET") {
-    if (!session) {
+  if (req.method === "GET" || req.method === "DELETE") {
+    if (!sessionId) {
       sendJson(res, 400, { error: "Mcp-Session-Id header is required" });
       return;
     }
 
-    const transport = transports.get(session);
+    const transport = transports.get(sessionId);
     if (!transport) {
       sendJson(res, 404, { error: "MCP session not found" });
       return;
     }
 
     await transport.handleRequest(req, res);
-    return;
-  }
-
-  if (req.method === "DELETE") {
-    if (!session) {
-      sendJson(res, 400, { error: "Mcp-Session-Id header is required" });
-      return;
-    }
-
-    const transport = transports.get(session);
-    if (!transport) {
-      sendJson(res, 404, { error: "MCP session not found" });
-      return;
-    }
-
-    await transport.handleRequest(req, res);
-    transports.delete(session);
     return;
   }
 
