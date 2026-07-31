@@ -8,10 +8,13 @@
   },
   "scripts": {
     "dev": "tsx src/index.ts",
+    "dev:http": "tsx src/http.ts",
     "build": "tsc",
     "start": "node dist/index.js",
+    "start:http": "node dist/http.js",
     "typecheck": "tsc --noEmit",
     "inspect": "npx @modelcontextprotocol/inspector npm run dev",
+    "inspect:http": "npx @modelcontextprotocol/inspector http://127.0.0.1:3000/mcp",
     "validate:registry": "mcp-publisher validate",
     "publish:registry": "mcp-publisher publish"
   },
