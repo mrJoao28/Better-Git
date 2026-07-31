@@ -55,6 +55,60 @@ export async function getRepositoryMetadata(ref: RepositoryRef) {
   return response.data;
 }
 
+export type FileContentResult = {
+  content: string;
+  size: number;
+  sha: string;
+};
+
+export async function getFileContent(
+  ref: RepositoryRef,
+  path: string,
+  branch: string,
+): Promise<FileContentResult> {
+  const github = createGitHubClient();
+
+  const response = await github.repos.getContent({
+    owner: ref.owner,
+    repo: ref.repo,
+    path,
+    ref: branch,
+  });
+
+  const data = response.data;
+
+  if (Array.isArray(data) || data.type !== "file") {
+    throw new Error(`Path "${path}" does not point to a single file.`);
+  }
+
+  if (!data.content) {
+    throw new Error(
+      `File "${path}" has no inline content (it may exceed GitHub's content API size limit).`,
+    );
+  }
+
+  const encoding = (data.encoding ?? "base64") as BufferEncoding;
+  const content = Buffer.from(data.content, encoding).toString("utf-8");
+
+  return { content, size: data.size, sha: data.sha };
+}
+
+export async function getBlobContent(ref: RepositoryRef, fileSha: string): Promise<string> {
+  const github = createGitHubClient();
+
+  const response = await github.git.getBlob({
+    owner: ref.owner,
+    repo: ref.repo,
+    file_sha: fileSha,
+  });
+
+  if (response.data.encoding !== "base64") {
+    throw new Error(`Unsupported blob encoding: ${response.data.encoding}`);
+  }
+
+  return Buffer.from(response.data.content, "base64").toString("utf-8");
+}
+
 export async function getRecursiveTree(
   ref: RepositoryRef,
   branch: string,

@@ -1,7 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { config } from "./config.js";
+import { analyzeDependenciesTool } from "./tools/analyze-dependencies.js";
 import { analyzeRepositoryTool } from "./tools/analyze-repository.js";
+import { architectureReportTool } from "./tools/architecture-report.js";
+import { getFileContentTool } from "./tools/get-file-content.js";
 import { getStructureTool } from "./tools/get-structure.js";
 
 const server = new McpServer({
@@ -27,6 +30,36 @@ server.registerTool(
     inputSchema: getStructureTool.inputSchema,
   },
   getStructureTool.handler,
+);
+
+server.registerTool(
+  getFileContentTool.name,
+  {
+    title: getFileContentTool.title,
+    description: getFileContentTool.description,
+    inputSchema: getFileContentTool.inputSchema,
+  },
+  getFileContentTool.handler,
+);
+
+server.registerTool(
+  analyzeDependenciesTool.name,
+  {
+    title: analyzeDependenciesTool.title,
+    description: analyzeDependenciesTool.description,
+    inputSchema: analyzeDependenciesTool.inputSchema,
+  },
+  analyzeDependenciesTool.handler,
+);
+
+server.registerTool(
+  architectureReportTool.name,
+  {
+    title: architectureReportTool.title,
+    description: architectureReportTool.description,
+    inputSchema: architectureReportTool.inputSchema,
+  },
+  architectureReportTool.handler,
 );
 
 const transport = new StdioServerTransport();
