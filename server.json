@@ -1,0 +1,20 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.mrJoao28/repository-intelligence-mcp",
+  "description": "Deep GitHub repository discovery and evidence-based analysis. Starts from a repository URL, discovers its structure and stack, and exposes read-only analysis tools.",
+  "repository": {
+    "url": "https://github.com/mrJoao28/repository-intelligence-mcp",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "repository-intelligence-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
