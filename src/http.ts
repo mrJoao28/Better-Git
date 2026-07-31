@@ -110,7 +110,12 @@ async function handleMcp(req: IncomingMessage, res: ServerResponse): Promise<voi
     };
 
     const server = createMcpServer();
-    await server.connect(transport);
+
+    // StreamableHTTPServerTransport exposes `onclose` as optional in its
+    // concrete type, while the MCP server's Transport contract requires it.
+    // At this point the handler has been assigned above, so this assertion
+    // reflects the runtime invariant without weakening the rest of the code.
+    await server.connect(transport as unknown as Parameters<typeof server.connect>[0]);
     await transport.handleRequest(req, res, body);
     return;
   }
